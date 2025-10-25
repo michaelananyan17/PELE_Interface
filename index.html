@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PELE - Step 1: Topic Selection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .card-topic {
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            user-select: none;
+            border: 3px solid transparent;
+            /* Enhanced visual appeal */
+            background-color: #ffffff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .card-topic:hover {
+            transform: scale(1.05); /* Slightly bigger hover effect */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .card-topic.selected {
+            border-color: #4f46e5; /* Indigo-600 */
+            background-color: #eef2ff; /* Indigo-50 */
+            transform: scale(1.05);
+            box-shadow: 0 0 0 4px #c7d2fe; /* Light ring for selection */
+        }
+        /* Hide the actual file input */
+        .file-upload-input {
+            opacity: 0;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            pointer-events: none; /* Important for accessibility */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 min-h-screen flex items-start justify-center">
+
+    <div id="app-container" class="w-full max-w-4xl bg-white rounded-xl shadow-2xl p-6 sm:p-10">
+
+        <!-- Header & Top Controls Container -->
+        <div class="flex justify-between items-start mb-2">
+            <!-- Left side: Title and Subtitle -->
+            <header class="text-left w-full sm:w-2/3">
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
+                    Step 1: Choose Your Lesson Focus
+                </h1>
+                <p class="text-lg text-gray-500 mt-2">
+                    Select 1–3 topics below, or use the controls for specific sources.
+                </p>
+            </header>
+
+            <!-- Right side: Custom Upload Button (Aligned with Title) -->
+            <div class="relative mt-1 flex-shrink-0"> 
+                <label id="upload-label-button" for="file-upload" class="flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer transition duration-300 hover:bg-gray-100">
+                    <svg id="upload-icon" class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 014 4v2a4 4 0 01-4 4H7z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 17l-4-4m0 0l-4 4m4-4v6"></path></svg>
+                    <!-- Text updated from "Upload" to "Upload Topic" -->
+                    <span id="upload-text" class="text-xs font-semibold text-gray-700 mt-1">Upload Topic</span>
+                </label>
+                <input type="file" id="file-upload" class="file-upload-input" accept=".pdf,.docx,.txt" onchange="handleFileUpload(event)">
+            </div>
+        </div>
+        
+        <!-- General Topic Selection (Cards) - Now the Dominant Feature -->
+        <section class="mb-8">
+            <h2 id="card-selection-title" class="text-xl font-bold text-gray-700 mb-6 mt-4 text-left">Select Your Main Areas of Interest</h2>
+            <div id="topic-cards-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
+                <!-- 12 Topics will be generated here (4 rows of 3) -->
+            </div>
+        </section>
+
+        <!-- Navigation/Search Footer -->
+        <footer class="mt-8 pt-6 border-t border-gray-200 flex justify-between items-center">
+            
+            <!-- 1. Search Control (Lower-Left), Aligned with Next Button -->
+            <!-- Note: items-center on the footer ensures the vertical alignment is level -->
+            <div class="flex items-center space-x-2">
+                <label for="search-input" class="flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer transition duration-300 hover:bg-gray-100 flex-shrink-0">
+                    <!-- Magnifying Glass Icon -->
+                    <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <span class="text-xs font-semibold text-gray-700 mt-1">Search</span>
+                </label>
+                <!-- Input field -->
+                <input type="text" id="search-input" placeholder="Specific Topic..." 
+                       class="w-48 p-2 border border-gray-300 rounded-full focus:ring-indigo-500 focus:border-indigo-500 text-sm" 
+                       oninput="handleSearchInput(this.value)">
+            </div>
+
+            <!-- Status Message and Next Button (Lower-Right) -->
+            <div id="status-and-next" class="flex flex-col items-end">
+                <button id="next-step-button" class="bg-gray-400 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg transition duration-300 cursor-not-allowed" disabled>
+                    Next Step (Assignment Type)
+                </button>
+                <div id="selected-topics-display" class="mt-2 text-sm font-medium text-indigo-600 h-6 text-right">
+                    <!-- Dynamic status message appears here -->
+                </div>
+            </div>
+
+        </footer>
+
+    </div>
+
+    <script>
+        const topics = [
+            { id: 't1', name: 'Global Finance', icon: '🏦' },
+            { id: 't2', name: 'IT & Software', icon: '💻' },
+            { id: 't3', name: 'International Travel', icon: '✈️' },
+            { id: 't4', name: 'Historical Events', icon: '📜' },
+            { id: 't5', name: 'Logistics & Supply', icon: '🚛' },
+            { id: 't6', name: 'Art & Culture', icon: '🎨' },
+            { id: 't7', name: 'Health & Medicine', icon: '⚕️' },
+            { id: 't8', name: 'Ecology & Climate', icon: '🌍' },
+            // Added 4 new topics for a total of 12
+            { id: 't9', name: 'Social Media', icon: '📱' },
+            { id: 't10', name: 'Sports & Fitness', icon: '⚽' },
+            { id: 't11', name: 'Culinary Arts', icon: '🍜' },
+            { id: 't12', name: 'Space Science', icon: '🚀' },
+        ];
+
+        let selectedTopics = new Set();
+        let customFile = null;
+
+        const container = document.getElementById('topic-cards-container');
+        const nextButton = document.getElementById('next-step-button');
+        const searchInput = document.getElementById('search-input');
+        const uploadButton = document.getElementById('upload-label-button');
+        const uploadIcon = document.getElementById('upload-icon');
+        const uploadText = document.getElementById('upload-text');
+        const selectedTopicsDisplay = document.getElementById('selected-topics-display');
+        const cardSelectionTitle = document.getElementById('card-selection-title');
+
+        // --- Core UI Logic ---
+
+        function updateNextButton() {
+            const hasSelection = selectedTopics.size > 0 || customFile !== null || searchInput.value.trim() !== '';
+            
+            if (hasSelection) {
+                nextButton.disabled = false;
+                nextButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                nextButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            } else {
+                nextButton.disabled = true;
+                nextButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+                nextButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            }
+        }
+
+        function updateSelectedTopicsDisplay() {
+            let message = 'No topic selected. Please choose 1-3 topics.'; 
+            
+            if (customFile) {
+                // If custom file is selected, show it and hide the card title
+                message = `PRIORITY SOURCE: ${customFile.name} | Click 'Upload Topic' to change.`;
+                cardSelectionTitle.style.visibility = 'hidden';
+            } else if (searchInput.value.trim()) {
+                // If specific search is active, show it and hide the card title
+                message = `SPECIFIC SEARCH: "${searchInput.value.trim()}" | Clear search to enable cards.`;
+                cardSelectionTitle.style.visibility = 'hidden';
+            } else if (selectedTopics.size > 0) {
+                // If cards are selected, show them and show the card title
+                const names = Array.from(selectedTopics).map(id => topics.find(t => t.id === id).name);
+                message = `Selected Cards (${selectedTopics.size}/3): ${names.join(', ')}`;
+                cardSelectionTitle.style.visibility = 'visible';
+            } else {
+                // Default state, show the prompt
+                cardSelectionTitle.style.visibility = 'visible';
+            }
+
+            selectedTopicsDisplay.textContent = message;
+        }
+
+        function toggleTopic(topicId, element) {
+            // Clear other priority sources if a card is selected
+            if (customFile || searchInput.value.trim()) {
+                clearPrioritySources();
+            }
+
+            if (selectedTopics.has(topicId)) {
+                // Deselect
+                selectedTopics.delete(topicId);
+                element.classList.remove('selected');
+            } else if (selectedTopics.size < 3) {
+                // Select
+                selectedTopics.add(topicId);
+                element.classList.add('selected');
+            } else {
+                // Max selected
+                console.log("Max 3 topics selected.");
+                return;
+            }
+            updateNextButton();
+            updateSelectedTopicsDisplay();
+        }
+
+        // --- Priority Source Management ---
+
+        function clearPrioritySources() {
+            // Clears custom file and search input
+            customFile = null;
+            searchInput.value = '';
+            
+            // Reset upload UI
+            uploadIcon.classList.remove('text-green-600');
+            uploadIcon.classList.add('text-indigo-600');
+            // Text updated here
+            uploadText.textContent = 'Upload Topic';
+            uploadText.classList.remove('text-green-600');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            
+            // Clear card selections and search input when file is uploaded
+            selectedTopics.clear();
+            searchInput.value = '';
+            document.querySelectorAll('.card-topic.selected').forEach(el => el.classList.remove('selected'));
+            
+            if (file) {
+                customFile = file;
+                uploadIcon.classList.add('text-green-600');
+                uploadIcon.classList.remove('text-indigo-600');
+                uploadText.textContent = 'File Ready';
+                uploadText.classList.add('text-green-600');
+            } else {
+                customFile = null;
+                clearPrioritySources();
+            }
+            updateNextButton();
+            updateSelectedTopicsDisplay();
+        }
+        
+        function handleSearchInput(value) {
+            // When user types in search, clear file and card selection to prioritize search
+            if (value.trim() !== '') {
+                clearPrioritySources();
+                selectedTopics.clear();
+                document.querySelectorAll('.card-topic.selected').forEach(el => el.classList.remove('selected'));
+            }
+            updateNextButton();
+            updateSelectedTopicsDisplay();
+        }
+
+        // --- Initialization ---
+
+        function init() {
+            topics.forEach(topic => {
+                const card = document.createElement('div');
+                card.id = topic.id;
+                card.className = 'card-topic bg-white p-6 rounded-xl flex flex-col items-center text-center hover:shadow-xl transition duration-200';
+                card.innerHTML = `
+                    <span class="text-5xl mb-3">${topic.icon}</span>
+                    <span class="font-bold text-gray-800">${topic.name}</span>
+                `;
+                card.onclick = () => toggleTopic(topic.id, card);
+                container.appendChild(card);
+            });
+
+            // Set initial state for card title visibility
+            cardSelectionTitle.style.visibility = 'visible';
+
+            // Prevent form submission behavior on the next button (in a real app, this would trigger navigation)
+            nextButton.addEventListener('click', () => {
+                const filters = {
+                    cards: Array.from(selectedTopics).map(id => topics.find(t => t.id === id).name),
+                    search: searchInput.value.trim(),
+                    file: customFile ? customFile.name : 'None'
+                };
+                console.log('Filters ready for Step 2:', filters);
+                alert(`Proceeding to Step 2 (Assignment Type Selection) with primary filter: ${filters.file !== 'None' ? 'Custom File' : (filters.search || filters.cards.join(', '))}`);
+            });
+            
+            updateNextButton();
+            updateSelectedTopicsDisplay();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
