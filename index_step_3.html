@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF0;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PELE - Step 3: Difficulty Level Selection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7; /* Slightly lighter background for separation */
+        }
+        .app-container {
+            background-color: #ffffff;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Custom Styling for the CEFR Slider/Pulley */
+        .cefr-range-container {
+            position: relative;
+            width: 100%;
+            padding: 3rem 0;
+        }
+
+        /* Styling for the range input (the scale itself) */
+        .cefr-range {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to right, #a7f3d0, #10b981, #1e3a8a); /* Gradient from light to dark blue/green */
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0;
+            outline: none;
+        }
+
+        /* Styling for the thumb (the selector) - Increased size to 32px */
+        .cefr-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 32px; /* Increased size */
+            height: 32px; /* Increased size */
+            background: #4f46e5; /* Indigo-600 */
+            border: 4px solid #ffffff;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            /* Increased transition duration for smoother movement */
+            transition: all 0.2s ease-in-out; 
+        }
+        .cefr-range::-moz-range-thumb {
+            width: 32px; /* Increased size */
+            height: 32px; /* Increased size */
+            background: #4f46e5;
+            border: 4px solid #ffffff;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            /* Increased transition duration for smoother movement */
+            transition: all 0.2s ease-in-out; 
+        }
+
+        /* Tick Marks and Labels */
+        .cefr-ticks {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            top: 50px; 
+            width: 100%;
+            height: 20px;
+        }
+        .cefr-tick-mark {
+            position: relative;
+            width: 1px;
+            height: 10px;
+            background-color: #6b7280;
+            top: -15px;
+        }
+        .cefr-label {
+            position: absolute;
+            top: 20px;
+            transform: translateX(-50%);
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: #374151;
+            padding-top: 5px;
+        }
+        .cefr-label.active {
+            color: #4f46e5; /* Indigo-600 for active label */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 min-h-screen flex items-start justify-center">
+
+    <div id="app-container" class="app-container w-full max-w-4xl rounded-xl p-6 sm:p-10">
+
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
+                Step 3: Filter by Difficulty Level
+            </h1>
+            <p class="text-lg text-gray-500 mt-2">
+                Select your current ability using the <strong class="text-indigo-600">CEFR Standard</strong> scale.
+            </p>
+        </header>
+
+        <!-- CEFR Scale/Pulley Component -->
+        <section class="mb-12">
+            
+            <!-- Current Selection Display -->
+            <div class="text-center mb-10">
+                <p class="text-sm font-semibold text-gray-500 mb-1">Current Level Selection:</p>
+                <div class="flex items-center justify-center">
+                    <span id="selected-level-display" class="text-6xl font-black text-indigo-600 tracking-wider transition-colors duration-200">B1</span>
+                    <span id="level-name-display" class="ml-4 text-xl font-bold text-gray-700">Intermediate</span>
+                </div>
+            </div>
+
+            <!-- Slider/Pulley Container -->
+            <div class="cefr-range-container">
+                <input type="range" min="0" max="5" value="2" step="1" id="cefr-slider" class="cefr-range">
+                
+                <!-- CEFR Ticks and Labels -->
+                <div class="cefr-ticks">
+                    <!-- The marks are positioned based on the width of the container -->
+                    <span class="cefr-label" style="left: 0%;" data-level="A1">A1</span>
+                    <span class="cefr-label" style="left: 20%;" data-level="A2">A2</span>
+                    <span class="cefr-label" style="left: 40%;" data-level="B1">B1</span>
+                    <span class="cefr-label" style="left: 60%;" data-level="B2">B2</span>
+                    <span class="cefr-label" style="left: 80%;" data-level="C1">C1</span>
+                    <span class="cefr-label" style="left: 100%;" data-level="C2">C2</span>
+                </div>
+            </div>
+
+            <!-- Description Box - Now Collapsible -->
+            <div id="level-description-container" class="mt-20 rounded-lg shadow-md overflow-hidden">
+                <!-- Clickable Header/Toggle Button -->
+                <div id="description-toggle-header" class="p-6 bg-indigo-100/50 hover:bg-indigo-100 cursor-pointer flex justify-between items-center transition duration-200">
+                    <h3 id="description-title" class="font-bold text-lg text-indigo-700">What does B1 mean?</h3>
+                    <span id="toggle-icon" class="text-2xl text-indigo-600 transition-transform duration-300 transform rotate-0">
+                        &#9660; <!-- Unicode for black down-pointing triangle (🔻) -->
+                    </span>
+                </div>
+            
+                <!-- Collapsible Content - Hidden by default -->
+                <div id="level-description-content" class="p-6 bg-gray-50 border-l-4 border-indigo-500 text-gray-700 hidden">
+                    <p id="level-description-text" class="text-base">
+                        Can understand the main points of clear standard input on familiar matters regularly encountered in work, school, leisure, etc.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Footer - ALIGNED -->
+        <footer class="mt-8 pt-6 border-t border-gray-200 flex justify-between items-end">
+            
+            <!-- Back Button -->
+            <button id="back-step-button" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-full font-bold text-lg transition duration-300 hover:bg-gray-300">
+                ← Back (Assignment Type)
+            </button>
+
+            <!-- Status Message and Next Button (Lower-Right) -->
+            <div id="status-and-next" class="flex flex-col items-end">
+                <div id="selected-level-status" class="mb-2 text-sm font-medium text-indigo-600 h-6 text-right">
+                    Current Level: B1 (Intermediate)
+                </div>
+                <button id="next-step-button" class="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg transition duration-300 hover:bg-indigo-700">
+                    Generate My Lesson
+                </button>
+            </div>
+
+        </footer>
+
+    </div>
+
+    <script>
+        // CEFR Data mapping slider value (0-5) to level and description
+        const cefrLevels = [
+            { level: 'A1', name: 'Beginner', description: 'Can understand and use familiar everyday expressions and very basic phrases aimed at the satisfaction of needs of a concrete type.' },
+            { level: 'A2', name: 'Elementary', description: 'Can understand sentences and frequently used expressions related to areas of most immediate relevance (e.g., very basic personal and family information, shopping, local geography, employment).' },
+            { level: 'B1', name: 'Intermediate', description: 'Can understand the main points of clear standard input on familiar matters regularly encountered in work, school, leisure, etc. Can deal with most situations likely to arise while travelling in an area where the language is spoken.' },
+            { level: 'B2', name: 'Upper Intermediate', description: 'Can understand the main ideas of complex text on both concrete and abstract topics, including technical discussions in his/her field of specialisation. Can interact with a degree of fluency and spontaneity.' },
+            { level: 'C1', name: 'Advanced', description: 'Can understand a wide range of demanding, longer texts, and recognize implicit meaning. Can express him/herself fluently and spontaneously without much obvious searching for expressions.' },
+            { level: 'C2', name: 'Proficiency', description: 'Can understand with ease virtually everything heard or read. Can summarise information from different spoken and written sources, reconstructing arguments and accounts in a coherent presentation.' },
+        ];
+
+        const slider = document.getElementById('cefr-slider');
+        const levelDisplay = document.getElementById('selected-level-display');
+        const levelNameDisplay = document.getElementById('level-name-display');
+        const descriptionTitle = document.getElementById('description-title'); // Updated ID
+        const descriptionText = document.getElementById('level-description-text');
+        const statusDisplay = document.getElementById('selected-level-status');
+        const labels = document.querySelectorAll('.cefr-label');
+
+        // New elements for the collapsible box
+        const descriptionToggleHeader = document.getElementById('description-toggle-header');
+        const descriptionContent = document.getElementById('level-description-content');
+        const toggleIcon = document.getElementById('toggle-icon');
+
+        function updateLevel(value) {
+            const index = parseInt(value);
+            const data = cefrLevels[index];
+
+            // 1. Update Display Elements
+            levelDisplay.textContent = data.level;
+            levelNameDisplay.textContent = data.name;
+            statusDisplay.textContent = `Current Level: ${data.level} (${data.name})`;
+
+            // 2. Update Description Box Content
+            descriptionTitle.textContent = `What does ${data.level} mean?`;
+            descriptionText.textContent = data.description;
+            
+            // 3. Update Label Colors (Highlighting the active point)
+            labels.forEach(label => {
+                if (label.getAttribute('data-level') === data.level) {
+                    label.classList.add('active');
+                } else {
+                    label.classList.remove('active');
+                }
+            });
+
+            // 4. Reset description to hidden (optional, but ensures fresh level gets hidden text)
+            if (!descriptionContent.classList.contains('hidden')) {
+                descriptionContent.classList.add('hidden');
+                toggleIcon.classList.remove('rotate-180');
+            }
+        }
+
+        function toggleDescription() {
+            descriptionContent.classList.toggle('hidden');
+            // Use Tailwind's utility class for rotation
+            toggleIcon.classList.toggle('rotate-180'); 
+        }
+
+        function init() {
+            // Set initial state based on the default value (2 for B1)
+            updateLevel(slider.value);
+
+            // Add event listener for real-time updates on the slider
+            slider.addEventListener('input', (event) => {
+                updateLevel(event.target.value);
+            });
+
+            // Add event listener for the description toggle
+            descriptionToggleHeader.addEventListener('click', toggleDescription);
+
+            // Handle Navigation
+            document.getElementById('next-step-button').addEventListener('click', () => {
+                const selectedLevel = cefrLevels[parseInt(slider.value)].level;
+                console.log('Difficulty selected for Step 4 (Generate Lesson):', selectedLevel);
+                // NOTE: Using a custom alert instead of window.alert() is recommended in production
+                // For this demonstration, we'll keep the placeholder alert:
+                alert(`Proceeding to Step 4 (Generate Lesson) with CEFR level: ${selectedLevel}`);
+            });
+            
+            document.getElementById('back-step-button').addEventListener('click', () => {
+                // NOTE: Using a custom alert instead of window.alert() is recommended in production
+                // For this demonstration, we'll keep the placeholder alert:
+                alert('Navigating back to Assignment Type Selection (Step 2).');
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
