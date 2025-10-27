@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PELE - Step 4: Assignment Workspace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+            min-height: 100vh;
+        }
+        .app-container {
+            background-color: #ffffff;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Consistent Assignment Block Styling */
+        .assignment-block {
+            border-left: 5px solid;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Color Coding for Assignments */
+        .block-writing { border-color: #4f46e5; background-color: #eef2ff; } /* Indigo */
+        .block-grammar { border-color: #10b981; background-color: #ecfdf5; } /* Emerald */
+        .block-vocabulary { border-color: #f59e0b; background-color: #fffbeb; } /* Amber */
+
+        /* Input/Textarea Styling */
+        .input-style {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            resize: vertical;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .input-style:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px #c7d2fe;
+            outline: none;
+        }
+
+        /* Grammar Blank Styling */
+        .grammar-blank {
+            display: inline-block;
+            width: 100px; /* Fixed width for the blank */
+            border-bottom: 2px solid #374151;
+            margin: 0 0.5rem;
+            text-align: center;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex justify-center">
+
+    <div id="app-container" class="app-container w-full max-w-4xl rounded-xl p-6 sm:p-10 my-8">
+
+        <!-- Main Application Title -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">
+                Personalized English Learning Experience (PELE)
+            </h1>
+            <!-- UPDATED: New section title "My Personal Assignment" -->
+            <p id="step-title" class="text-xl font-medium text-indigo-600 mt-3">
+                My Personal Assignment
+            </p>
+            <p class="text-gray-500 mt-2">Topic: <span id="topic-display" class="font-semibold text-gray-700">[Mock Topic: The History of Space Exploration]</span> | Level: <span id="level-display" class="font-semibold text-gray-700">[Mock Level: B2]</span></p>
+        </header>
+
+        <!-- Dynamic Assignment Content Container -->
+        <div id="assignments-workspace">
+            <!-- Assignments will be injected here based on selection and priority -->
+        </div>
+
+        <div id="no-assignments-message" class="hidden text-center p-10 bg-gray-100 border border-gray-300 rounded-xl">
+            <p class="text-2xl font-bold text-gray-700 mb-2">No Assignments Selected</p>
+            <p class="text-gray-500">Please go back to Step 2 to select an assignment type.</p>
+        </div>
+
+
+        <!-- GLOBAL NAVIGATION FOOTER -->
+        <footer class="mt-12 pt-6 border-t border-gray-200 flex justify-between items-end">
+            
+            <!-- Button (Functionality not implemented, but styled for consistency) -->
+            <button class="bg-gray-200 text-gray-700 px-6 py-3 rounded-full font-bold text-lg transition duration-300 hover:bg-gray-300">
+                ← Back to Setup
+            </button>
+
+            <!-- Submit Assignment Button -->
+            <button class="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg transition duration-300 hover:bg-indigo-700">
+                Submit Assignments
+            </button>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- MOCK INPUT DATA ---
+        // In a real application, this data would be passed from Step 2's selection.
+        const MOCK_SELECTED_ASSIGNMENTS = ['VocabularyWords', 'WritingPrompt', 'GrammarPractice']; 
+        
+        // --- PRIORITY ORDER & TEMPLATES ---
+
+        const ASSIGNMENT_PRIORITY = [
+            'WritingPrompt',    // 1st Priority (English Text Topic)
+            'GrammarPractice',  // 2nd Priority
+            'VocabularyWords'   // 3rd Priority
+        ];
+
+        const TEMPLATES = {
+            // NOTE: Removed static 'Assignment X:' numbering from titles
+            WritingPrompt: {
+                title: 'English Text Topic (Essay Prompt)',
+                description: 'Write a 250-word essay discussing the long-term impact of non-governmental organizations on global literacy rates. Support your argument with at least two distinct examples.',
+                content: `
+                    <p class="text-gray-700 mb-4 font-medium">Prompt: [Generated Topic/Content Here]</p>
+                    <textarea class="input-style h-64" placeholder="Start writing your essay here..."></textarea>
+                    <p class="text-sm text-gray-500 mt-2 text-right">Word Count: 0 / 250</p>
+                `,
+                colorClass: 'block-writing'
+            },
+            GrammarPractice: {
+                title: 'Grammar Practice (Fill-in-the-Blank)',
+                description: 'Complete the following sentences by filling in the blanks with the correct form of the verb provided in parentheses.',
+                content: `
+                    <ol class="list-decimal list-inside space-y-4 text-gray-800">
+                        <li>
+                            The committee <span class="grammar-blank"><input type="text" class="input-style p-1 h-8 text-center" placeholder="was discussing"></span> (discuss) the budget when the fire alarm rang.
+                        </li>
+                        <li>
+                            If she <span class="grammar-blank"><input type="text" class="input-style p-1 h-8 text-center" placeholder="had known"></span> (know) the truth, she would never have agreed.
+                        </li>
+                        <li>
+                            He is committed to <span class="grammar-blank"><input type="text" class="input-style p-1 h-8 text-center" placeholder="improving"></span> (improve) the local transport system.
+                        </li>
+                    </ol>
+                `,
+                colorClass: 'block-grammar'
+            },
+            VocabularyWords: {
+                title: 'Vocabulary Words (Contextual Usage)',
+                description: 'Review the following vocabulary words. For each word, write one sentence demonstrating its correct usage in a new context.',
+                content: `
+                    <div class="space-y-4">
+                        <div class="p-3 border border-gray-200 rounded-lg bg-white">
+                            <p class="font-bold text-indigo-700 mb-1">1. Ambiguous (adj):</p>
+                            <p class="text-sm text-gray-600 mb-2">Definition: Open to more than one interpretation; having a double meaning.</p>
+                            <input type="text" class="input-style" placeholder="Your sentence using 'Ambiguous' here...">
+                        </div>
+                        <div class="p-3 border border-gray-200 rounded-lg bg-white">
+                            <p class="font-bold text-indigo-700 mb-1">2. Disseminate (v):</p>
+                            <p class="text-sm text-gray-600 mb-2">Definition: To spread or disperse (something, especially information) widely.</p>
+                            <input type="text" class="input-style" placeholder="Your sentence using 'Disseminate' here...">
+                        </div>
+                        <div class="p-3 border border-gray-200 rounded-lg bg-white">
+                            <p class="font-bold text-indigo-700 mb-1">3. Idiosyncrasy (n):</p>
+                            <p class="text-sm text-gray-600 mb-2">Definition: A mode of behavior or way of thought peculiar to an individual.</p>
+                            <input type="text" class="input-style" placeholder="Your sentence using 'Idiosyncrasy' here...">
+                        </div>
+                    </div>
+                `,
+                colorClass: 'block-vocabulary'
+            }
+        };
+
+
+        // --- RENDERING LOGIC ---
+
+        function renderAssignments(selectedTypes) {
+            const workspace = document.getElementById('assignments-workspace');
+            const noMessage = document.getElementById('no-assignments-message');
+            workspace.innerHTML = '';
+            
+            // 1. Filter the priority list to only include types that were actually selected
+            const assignmentsToRender = ASSIGNMENT_PRIORITY.filter(type => selectedTypes.includes(type));
+
+            if (assignmentsToRender.length === 0) {
+                noMessage.classList.remove('hidden');
+                return;
+            } else {
+                noMessage.classList.add('hidden');
+            }
+
+            // 2. Render blocks in the determined priority order and apply sequential numbering
+            assignmentsToRender.forEach((type, index) => {
+                const data = TEMPLATES[type];
+                
+                // Construct the dynamic, sequential title (Assignment 1, 2, 3...)
+                const assignmentNumber = index + 1;
+                const numberedTitle = `Assignment ${assignmentNumber}: ${data.title}`;
+                
+                const block = document.createElement('div');
+                block.className = `assignment-block ${data.colorClass}`;
+                block.innerHTML = `
+                    <h2 class="text-2xl font-bold text-gray-900 mb-3">${numberedTitle}</h2>
+                    <p class="text-gray-700 mb-6">${data.description}</p>
+                    <div class="p-4 rounded-lg bg-white shadow-inner">
+                        ${data.content}
+                    </div>
+                `;
+                workspace.appendChild(block);
+            });
+        }
+
+        window.onload = function() {
+            // Initiate the rendering with the mock input
+            renderAssignments(MOCK_SELECTED_ASSIGNMENTS);
+        };
+    </script>
+</body>
+</html>
